@@ -1,7 +1,257 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+    <style>
+        body {
+            background-color: white;
+            padding: 100px;
+            width: 1000px;
+            margin: auto;
+            text-align: left;
+            font-weight: 300;
+            font-family: 'Open Sans', sans-serif;
+            color: #121212;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        kbd {
+            color: #121212;
+        }
+    </style>
+    <title>CS 184 Path Tracer</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+    </script>
+
+</head>
+
+<body>
+    <br />
+    <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2023</h1>
+    <h1 align="middle">Assignment 3-2: Additional Features to PathTracer</h1>
+    <h2 align="middle">Omer Sasson, Oren Azad</h2>
+    <h2 align="middle">Website URL: <a
+            href="https://orenazad.github.io/cs184-website/proj3-2/index.html">https://orenazad.github.io/cs184-website/proj3-2/index.html</a>
+    </h2>
+    <div class="padded">
+
+        <h3 align="middle">Part 0. Cool Images</h3>
+
+        <p align="middle">The following images were rendered on a Ryzen 9 5950x using 32 threads at a resolution of
+            1920x1440. Please enjoy!</p>
+
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/CBSpheres_S2048_adaptive_L8_M10.png" align="middle" width="1080px" />
+                        <figcaption>CBSpheres.dae: <var>S = 2048, A= 64 0.05, L = 8, M = 10</var></figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/CBDragon_S2048_adaptive_L16_M12_B0_1_D1_75.png" align="middle"
+                            width="1080px" />
+                        <figcaption>CBDragon.dae: <var>S = 2048, A= 64 0.05, L = 16, M = 12, B = 0.1, D =
+                                1.75</var><br><i>Render Time: 4.28 hours</i></figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+
+        <h3 align="middle">Part 1. Mirror and Glass Materials</h3>
+
+        <p><b>
+                Show a sequence of six images of scene `CBspheres.dae` rendered with `max_ray_depth` set to 0, 1, 2, 3,
+                4, 5, and 100. The other settings should be at least 64 samples per pixel and 4 samples per light. Make
+                sure to include all screenshots.
+            </b></p>
+        <p>The following images were all rendered with a sampling rate of 2048 samples per pixel, adaptive sampling, and
+            4 samples per light.</p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M0.png" align="middle" width="480px" />
+                        <figcaption>m = 0</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M1.png" align="middle" width="480px" />
+                        <figcaption>m = 1</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M2.png" align="middle" width="480px" />
+                        <figcaption>m = 2</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M3.png" align="middle" width="480px" />
+                        <figcaption>m = 3</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M4.png" align="middle" width="480px" />
+                        <figcaption>m = 4</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M5.png" align="middle" width="480px" />
+                        <figcaption>m = 5</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt1/CBspheres_S2048_adaptive_L4_M100.png" align="middle" width="480px" />
+                        <figcaption>m = 100</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <p><b>
+                Point out the new multibounce effects that appear in each image.
+            </b></p>
+        <p>
+            As expected, in the first image with <var>m = 0</var>, we only see the light itself. With <var>m =
+                1</var>, we see everything the light directly illuminates: the walls, and the initial specular
+            reflection in the ball. For the mirrored sphere, the rest is dark because the second bounce required to
+            create the mirror hasn't happened yet! For the glass sphere, any light that isn't directly reflected is
+            refracted, which also hasn't happened yet! This is why both spheres are dark. With an additional bounce
+            <var>m = 2</var>, the mirrored sphere reflects now but the glass sphere is still mostly dark. Finally
+            with <var>m = 3</var>, we see the glass sphere as we expect. Notice the light below the glass sphere
+            that has been refracted through. Also, notice the much brighter shadows under both spheres. However, in
+            the mirrored sphere the glass sphere is still dark, since it's mirrored rays are lagging one bounce
+            behind! Now if we move to <var>m = 4</var>, we can see this is fixed, and we additionally see some light
+            cast onto the wall to the right of the glass sphere. On <var>m = 5</var>, this small light appears to
+            show up <i>through</i> the glass sphere in the mirrored sphere, but it can be difficult to tell at low
+            resolution like this. Beyond this and at <var>m = 100</var> there are no significant changes really.
+        </p>
+        <br>
+        <p><b>
+                Explain how these bounce numbers relate to the particular effects that appear. Make sure to include all
+                screenshots.
+            </b></p>
+        <p>
+            Please see the above response where we have this as well!
+        </p>
+        <br>
+
+        <h3 align="middle">Part 4. Depth of Field</h3>
+
+        <p><b>
+                In a few sentences, explain the differences between a pinhole camera model and a thin-lens camera model.
+            </b></p>
+        <p>
+            In the pinhole camera model, the image produced is always in focus, regardless of the distance between
+            the camera and the object being captured. This is because the pinhole camera model assumes that light
+            travels in straight lines and forms a sharp image on the opposite side of a small hole. However, in the
+            thin lens camera model we consider the bending of light rays through the lens itself, which can
+            therefore cause a blurred image on the sensor. Therefore, different variables come into play in our
+            final image, such as the aperture size, the focus distance, and distance to the picture object(s). We
+            can adjust these variables to change the focus of the image in a way that we think looks best!
+            However, in the thin-lens camera model, the distance between the lens and the object affects the focus, and
+            the image becomes less sharp if the object is too far or too close to the lens. Additionally, the thin-lens
+            camera model provides a more accurate representation of real-world cameras and is commonly used in computer
+            graphics and computer vision.
+        </p>
+        <br>
+        <p><b>
+                Show a "focus stack" where you focus at 4 visibly different depths through a scene. Make sure to include
+                all screenshots.
+            </b></p>
+        <p>The following images were all rendered with a sampling rate of 1024 samples per pixel, adaptive sampling, 4
+            samples per light, and a max ray depth of 6.</p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/pt4/focus_stack/CBDragon_S1024_adaptive_L4_M6_B0_8_D4_4.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>D = 4.4</var></figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt4/focus_stack/CBDragon_S1024_adaptive_L4_M6_B0_8_D4_6.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>D = 4.6</var></figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt4/focus_stack/CBDragon_S1024_adaptive_L4_M6_B0_8_D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>D = 4.8</var></figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt4/focus_stack/CBDragon_S1024_adaptive_L4_M6_B0_8_D5.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>D = 5.0</var></figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <p><b>
+                Show a sequence of 4 pictures with visibly different aperture sizes, all focused at the same point in a
+                scene. Make sure to include all screenshots.
+            </b></p>
+        <p>The following images were all rendered with a sampling rate of 1024 samples per pixel, adaptive sampling, 4
+            samples per light, and a max ray depth of 6.</p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/pt4/aperture/CBDragon_S1024_adaptive_L4_M6_B_25D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>A = .25</var></figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt4/aperture/CBDragon_S1024_adaptive_L4_M6_B_5D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>A = .5</var></figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt4/aperture/CBDragon_S1024_adaptive_L4_M6_B_75D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>A = .75</var></figcaption>
+                    </td>
+                    <td>
+                        <img src="images/pt4/aperture/CBDragon_S1024_adaptive_L4_M6_B1_D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>A = 1</var></figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/pt4/aperture/CBDragon_S1024_adaptive_L4_M6_B1_25_D4_8.png" align="middle"
+                            width="480px" />
+                        <figcaption><var>A = 1.25</var></figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+
+    </div>
+</body>
+
 </html>
