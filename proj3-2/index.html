@@ -75,6 +75,20 @@
             </table>
         </div>
         <br>
+        <h3 align="middle">Overview</h3>
+        <p>
+            For project 3-2, we are implementing additional features to our pathtracer. We chose to implemement mirror
+            and glass materials, as well as a thin-lens camera model. The mirror material was quite simple, as it just
+            bounces back all the light that comes its way. However, the glass material both reflects <i>and</i> refracts
+            rays! To implement this, we first solved the problem of calculating refraction, including handling total
+            internal reflection. Then, we used Schlick's approximation and a coin flip to determine which rays would be
+            refracted or reflected in the glass material. <br><br>
+            Next, we implemented a thin-lens camera model for depth of field. Using this model, we sample a random
+            location on the lens. From here, we compute the ray from this location on the lens to our point in focus.
+            Much of the math was already done here since we shoot a ray in this direction in the original pathtracer, so
+            all we need to do it find the intersection of the <i>plane of focus</i> with this ray. Once we have the
+            point of intersection, and the sampled lens location, we can fully construct our new ray!
+        </p>
 
         <h3 align="middle">Part 1. Mirror and Glass Materials</h3>
 
@@ -250,6 +264,14 @@
             </table>
         </div>
         <br>
+
+        <h3 align="middle">Partner Overvciew</h3>
+        <p>We work well together as a team and find that we can both fill in the other's weaknesses. While we often pair
+            program, for this project we split the tasks up. Still, we both worked together to clear any issues the
+            other was having and to provide some extra brain power if the other got stuck. Overall, working together is
+            always a great lesson in balancing workloads, communication, and also some practical skills like
+            using <b><var>git</var></b> correctly and cleanly. If nothing else, we have a fun time and have enjoyed the
+            projects so far. We are looking forwards to working together on something cool for the final project!</p>
 
     </div>
 </body>
